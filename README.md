@@ -1,2 +1,2 @@
 # OPTproj
-Zeroth order Frank Wolfe algorithm
+Zeroth-Order Frank Wolfe algorithm
