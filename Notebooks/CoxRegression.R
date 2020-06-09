@@ -25,3 +25,5 @@ table(substr(colnames(rna),14,14))
 
 n_index <- which(substr(colnames(rna),14,14) == '1')
 t_index <- which(substr(colnames(rna),14,14) == '0')
+dim(rna)
+
