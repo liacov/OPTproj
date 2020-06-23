@@ -13,8 +13,3 @@ https://gist.github.com/fabianp/0a3cbf128ffb4b651bd679baadc0949b
 
 
 - https://www.biostars.org/p/153013/
-
-TODO:
-
-- fix L computation
-- check F computation
