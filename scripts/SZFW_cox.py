@@ -3,21 +3,15 @@ File created 23th June 2020
 Authors: Laura Iacovissi, Federico Matteo
 """
 
-
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
+import matplotlib.pyplot as pl
+
 from numba import njit
 from itertools import product
-from multiprocessing import Pool
 from scipy.sparse.linalg import norm
 
-"""
-File created 23th June 2020
-Authors: Laura Iacovissi, Federico Matteo
-"""
-
-import numpy as np
-from numba import njit
 
 def e(i, d):
     ei = np.zeros(d)
@@ -43,7 +37,7 @@ def KWSA(F, w, m, c, d):
     return (F_wc - F(w)) / c
 
 
-def IRDSA_out(F, w, m, c, z):
+def IRDSA_out(F, w, m, c, seed):
     """
     Improvised Random Direction stochastic approximation
     for gradient estimation - output function
@@ -56,8 +50,11 @@ def IRDSA_out(F, w, m, c, z):
     - z: random generated vectors
 
     """
+    np.random.seed(seed)
+    z = np.random.normal(0, 1, d)
     F_w = F(w)
-    return (F(w + c * z) - F_w) / c * z
+    return ((F(w + c * z) - F_w) / c * z)
+
 
 
 def IRDSA(F, w, m, c, d):
@@ -73,74 +70,12 @@ def IRDSA(F, w, m, c, d):
     - c: costant
 
     """
-    pool = Pool()
-    z = np.random.normal(0, 1, (d, m))
-    out = pool.starmap(IRDSA_out , product([F], [w], [m], [c], [ z[:,i] for i in range(m) ]))
-    pool.close()
+    seeds = np.random.randint(low=1, high=2000, size=m)
+    p = mp.Pool(mp.cpu_count())
+    out = p.starmap(IRDSA_out, product([F],[w],[m],[c],seeds))
+    print(out)
+    p.close()
     return np.sum(out)/m
-
-def InexactUpdate(g, d, v, r, gamma, mu):
-    """
-    INPUT
-    - g: gradient approximation
-    - d: dimension
-    - v: starting point
-    - r: radius
-    - gamma: decreasing coefficient
-    - mu: threshold
-    """
-
-    haty = v
-    t = 1
-    while True:
-        # ARGMIN PROBLEM
-        ht1 = g + gamma*(haty - v)
-        i_k = np.argmax(np.abs(ht1))
-        ei = e(i_k, d) * r
-        yt = np.sign(-ht1[i_k]) * ei
-        if np.dot(ht1, yt - haty) >= - mu:
-            break
-        else:
-            haty = (t-1)/(t+1) * haty + 2/(t+1)*yt
-            t +=1
-    return haty
-
-
-def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
-    """
-    INPUT
-    - F: loss function
-    - d: dimension
-    - w0: starting point
-    - L: lipschitz
-    - B: 1
-    - r: radius of the ball
-    - T: max iteration
-    - eps: tolerance
-    """
-
-    alpha = lambda t: 2/(t+2)
-    gamma = lambda t: 4*L/t
-    mu = lambda t: L*2*r/(t*T)
-    m = lambda t: 100 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
-    c = 1 / (np.sqrt(2*T)) * np.max([1/(d+3), np.sqrt(2*r/(d*(T+1)))]) # smoothing parameter now fixed
-
-    loss = []
-    v, w = w0, w0
-    partial = 0
-
-    for t in range(1, T+1):
-        dt = (1-alpha(t)) * w + alpha(t) * v
-        g = IRDSA(F, dt, int(np.ceil(m(t))), c, d)
-        v = InexactUpdate(g, d, v, r, gamma(t), mu(t)) #ICG
-        w_pred = w
-        w = (1 - alpha(t)) * w + alpha(t) * v
-        partial += w
-        loss_eval = np.abs(F(w_pred) - F(w))
-        loss.append(loss_eval)
-        print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
-        if loss_eval < eps: break # check stopping condition
-    return F(w_pred), F(w), w, partial/T, t, loss
 
 
 def stochasticZFW(F, d,  w0, method = "IRDSA", r=1, T=100, eps=1e-5):
@@ -166,7 +101,7 @@ def stochasticZFW(F, d,  w0, method = "IRDSA", r=1, T=100, eps=1e-5):
                                 "p": lambda t: 4 / (np.power(d, 1/3) * np.power(t+8, 2/3)),
                                 "oracle": IRDSA},
 
-                       "IRDSA": {"m": 938,
+                       "IRDSA": {"m": 20,
                                 "c": lambda t: 2 * np.sqrt(6) / (np.power(d, 3/2) * np.power(t+8, 1/3)),
                                 "p": lambda t: 4 / (np.power(1+d/6, 1/3) * np.power(t+8, 2/3)),
                                 "oracle": IRDSA}
@@ -190,6 +125,7 @@ def sZFW(F, d, w0, params, r, T, eps):
     """
 
     loss = []
+    F_values = [F(w0)]
     gamma = lambda t: 2/(t+8)
     w = w0
     dt = np.zeros(d)
@@ -205,45 +141,13 @@ def sZFW(F, d, w0, params, r, T, eps):
         w_pred = w
         w = (1 - gamma(t)) * w + gamma(t) * v
         partial += w
-        loss_eval = np.abs(F(w_pred) - F(w))
+        F_w = F(w)
+        F_values.append(F_w)
+        loss_eval = np.abs(F_values[-2] - F_w)
         loss.append(loss_eval)
         print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
         if loss_eval < eps: break # check stopping condition
     return F(w_pred), F(w), w, partial/T, t, loss
-
-
-
-def detZFW(F, L, d, w0, r=1, T=100, eps=1e-5):
-    """
-    INPUT
-    - F: loss function
-    - L: Lip constant
-    - d: dimension
-    - w0: starting point
-    - r: radius of the ball
-    - T: max iteration
-    - eps: tolerance
-    """
-
-    gamma = lambda t: 2/(t+2)
-    c = lambda t: L*gamma(t)/d
-    w = w0
-    partial = 0
-    for t in range(1, T+1):
-        # comupute the gradient approx
-        gt = KWSA(F, w, None, c(t), d)
-        # compute the linear problem solution on the L1 Ball of radius r
-        i_k = np.argmax(np.abs(gt))
-        ei = e(i_k, d) * r
-        v = np.sign(-gt[i_k]) * ei
-        # compute step
-        w_pred = w
-        w = (1 - gamma(t)) * w + gamma(t) * v
-        partial += w
-        loss_eval = F(w_pred) - F(w)
-        print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
-        if loss_eval < eps: break # check stopping condition
-    return F(w_pred), F(w), w, partial/T, t
 
 
 @njit
@@ -288,7 +192,7 @@ if __name__ == "__main__":
     L = 2/X.shape[0] * np.linalg.norm(X.T @ X)
 
     # call ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss = stochasticZFW(F, X.shape[1], w0, method = "IRDSA", r=10, T=100, eps=1e-6)
+    fpred, f, w, mean, t, loss = stochasticZFW(F, X.shape[1], w0, method = "IRDSA", r=10, T=40, eps=1e-8)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
