@@ -7,9 +7,9 @@
 #SBATCH --mail-user laura.iacovissi@gmail.com
 #SBATCH --mail-type=ALL
 
-#SBATCH --cpus-per-task=24
+#SBATCH -c 24
 #SBATCH --mem=10G
-#SBATCH --partition=short
+#SBATCH -p short
 
 # Run the python script
 python3 SZFW_cox.py

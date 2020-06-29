@@ -7,6 +7,8 @@ Authors: Laura Iacovissi, Federico Matteo
 import numpy as np
 import pandas as pd
 from numba import njit
+from itertools import product
+from multiprocessing import Pool
 from scipy.sparse.linalg import norm
 
 """
@@ -41,7 +43,6 @@ def KWSA(F, w, m, c, d):
     return (F_wc - F(w)) / c
 
 
-@njit(parallel=True)
 def IRDSA_out(F, w, m, c, z):
     """
     Improvised Random Direction stochastic approximation
@@ -56,10 +57,8 @@ def IRDSA_out(F, w, m, c, z):
 
     """
     F_w = F(w)
-    out = np.zeros(z.shape[0])
-    for i in range(m):
-        out += (F(w + c * z[:,i]) - F_w) / c * z[:,i]
-    return out/m
+    return (F(w + c * z) - F_w) / c * z
+
 
 def IRDSA(F, w, m, c, d):
     """
@@ -74,8 +73,11 @@ def IRDSA(F, w, m, c, d):
     - c: costant
 
     """
+    pool = Pool()
     z = np.random.normal(0, 1, (d, m))
-    return IRDSA_out(F, w, m, c, z)
+    out = pool.starmap(IRDSA_out , product([F], [w], [m], [c], [ z[:,i] for i in range(m) ]))
+    pool.close()
+    return np.sum(out)/m
 
 def InexactUpdate(g, d, v, r, gamma, mu):
     """
