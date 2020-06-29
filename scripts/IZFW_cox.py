@@ -95,7 +95,7 @@ def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
         loss.append(loss_eval)
         print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
         if loss_eval < eps: break # check stopping condition
-    return F(w_pred), F(w), w, partial/T, t, loss
+    return F(w_pred), F(w), w, partial/T, t, loss, F_values
 
 @njit
 def F(w):
