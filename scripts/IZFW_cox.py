@@ -1,34 +1,17 @@
 """
-File created 23th June 2020
+File created 29th June 2020
 Authors: Laura Iacovissi, Federico Matteo
 """
 
 import numpy as np
 import pandas as pd
 from numba import njit
-
+from scipy.sparse.linalg import norm
 
 def e(i, d):
     ei = np.zeros(d)
     ei[i] = 1
     return ei
-
-def KWSA(F, w, m, c, d):
-    """
-    Kiefer-Wolfowitz stochastic approximation
-    for gradient estimation
-
-    INPUT:
-    - F: objective function
-    - w: current weight
-    - m: sample size (null in this case)
-    - d: dimension
-    - c: costant
-
-    """
-
-    F_wc = np.array([F(w + c * e(i, d)) for i in range(d)])
-    return (F_wc - F(w)) / c
 
 
 def IRDSA(F, w, m, c, d):
@@ -49,68 +32,62 @@ def IRDSA(F, w, m, c, d):
     return np.mean([(F(w + c * z[:,i]) - F_w) / c * z[:,i] for i in range(m)], axis = 0)
 
 
-def stochasticZFW(F, d,  w0, method = "IRDSA", r=1, T=100, eps=1e-5):
+def InexactUpdate(g, d, v, r, gamma, mu):
+    """
+    INPUT
+    - g: gradient approximation
+    - d: dimension
+    - v: starting point
+    - r: radius
+    - gamma: decreasing coefficient
+    - mu: threshold
+    """
+
+    haty = v
+    t = 1
+    while True:
+        # ARGMIN PROBLEM
+        ht1 = g + gamma*(haty - v)
+        i_k = np.argmax(np.abs(ht1))
+        ei = e(i_k, d) * r
+        yt = np.sign(-ht1[i_k]) * ei
+        if np.dot(ht1, yt - haty) >= - mu:
+            break
+        else:
+            haty = (t-1)/(t+1) * haty + 2/(t+1)*yt
+            t +=1
+    return haty
+
+
+def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
     """
     INPUT
     - F: loss function
     - d: dimension
     - w0: starting point
-    - method: zeroth order oracle
+    - L: lipschitz
+    - B: 1
     - r: radius of the ball
     - T: max iteration
     - eps: tolerance
     """
 
-    Parameters_dict = {"KWSA": {"m": None,
-                                "c": lambda t: 2 / (np.sqrt(d) * np.power(t+8, 1/3)),
-                                "p": lambda t: 4 / np.power(t+8, 2/3),
-                                "oracle": KWSA},
-
-
-                       "RDSA": {"m": 1,
-                                "c": lambda t: 2 / (np.power(d, 3/2) * np.power(t+8, 1/3)),
-                                "p": lambda t: 4 / (np.power(d, 1/3) * np.power(t+8, 2/3)),
-                                "oracle": IRDSA},
-
-                       "IRDSA": {"m": 938,
-                                "c": lambda t: 2 * np.sqrt(6) / (np.power(d, 3/2) * np.power(t+8, 1/3)),
-                                "p": lambda t: 4 / (np.power(1+d/6, 1/3) * np.power(t+8, 2/3)),
-                                "oracle": IRDSA}
-
-                        }
-
-    return sZFW(F, d, w0, Parameters_dict[method], r, T, eps)
-
-
-
-def sZFW(F, d, w0, params, r, T, eps):
-    """
-    INPUT
-    - F: loss function
-    - d: dimension
-    - w0: starting point
-    - params: dict of parameters for the selected method
-    - r: radius of the ball
-    - T: max iteration
-    - eps: tolerance
-    """
+    alpha = lambda t: 2/(t+2)
+    gamma = lambda t: 4*L/t
+    mu = lambda t: L*2*r/(t*T)
+    m = lambda t: 100 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
+    c = 1 / (np.sqrt(2*T)) * np.max([1/(d+3), np.sqrt(2*r/(d*(T+1)))]) # smoothing parameter now fixed
 
     loss = []
-    F_values = [F(w0)]
-    gamma = lambda t: 2/(t+8)
-    w = w0
-    dt = np.zeros(d)
+    v, w = w0, w0
     partial = 0
+
     for t in range(1, T+1):
-        # comupute the gradient approx
-        gt = params["oracle"](F, w, params["m"], params["c"](t), d)
-        dt = (1 - params["p"](t)) * dt + params["p"](t) * gt
-        # compute the linear problem solution on the L1 Ball of radius r
-        ei = e(np.argmax(np.abs(dt)), d) * r
-        v = np.sign(-dt) * ei
-        # compute step
+        dt = (1-alpha(t)) * w + alpha(t) * v
+        g = IRDSA(F, dt, int(np.ceil(m(t))), c, d)
+        v = InexactUpdate(g, d, v, r, gamma(t), mu(t)) #ICG
         w_pred = w
-        w = (1 - gamma(t)) * w + gamma(t) * v
+        w = (1 - alpha(t)) * w + alpha(t) * v
         partial += w
         F_w = F(w)
         F_values.append(F_w)
@@ -118,8 +95,7 @@ def sZFW(F, d, w0, params, r, T, eps):
         loss.append(loss_eval)
         print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
         if loss_eval < eps: break # check stopping condition
-    return F(w_pred), F(w), w, partial/T, t, loss, F_values
-
+    return F(w_pred), F(w), w, partial/T, t, loss
 
 @njit
 def F(w):
@@ -159,14 +135,16 @@ if __name__ == "__main__":
     # stating point
     w0 = np.random.rand(d)
     w0 = w0/np.sum(w0) * np.random.rand(1) *10
+    # Lipschitz constant
+    L = np.linalg.norm(X.T @ X)
 
     # call ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss, f_values = stochasticZFW(F, X.shape[1], w0, method = "IRDSA", r=10, T=200, eps=1e-8)
+    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B = 1, r = 10, T = 100, eps = 1e-8)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
     # print F(stanting point) VS F(w*)
     print(F(w0), F(w))
 
-    np.save('../Data/results/function_SZFW_IRDSA_cox.npy',f_values)
-    np.save('../Data/results/loss_SZFW_IRDSA_cox.npy',loss)
+    np.save('../Data/results/function_IZFW_cox.npy',f_values)
+    np.save('../Data/results/loss_IZFW_cox.npy',loss)
