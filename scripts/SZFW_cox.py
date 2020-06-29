@@ -147,7 +147,7 @@ def sZFW(F, d, w0, params, r, T, eps):
         loss.append(loss_eval)
         print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
         if loss_eval < eps: break # check stopping condition
-    return F(w_pred), F(w), w, partial/T, t, loss
+    return F(w_pred), F(w), w, partial/T, t, loss, F_values
 
 
 @njit
@@ -192,11 +192,12 @@ if __name__ == "__main__":
     L = 2/X.shape[0] * np.linalg.norm(X.T @ X)
 
     # call ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss = stochasticZFW(F, X.shape[1], w0, method = "IRDSA", r=10, T=40, eps=1e-8)
+    fpred, f, w, mean, t, loss, f_values = stochasticZFW(F, X.shape[1], w0, method = "IRDSA", r=10, T=40, eps=1e-8)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
     # print F(stanting point) VS F(w*)
     print(F(w0), F(w))
 
+    np.save('../Data/results/funtion_SZFW_IRDSA_cox.npy',f_values)
     np.save('../Data/results/loss_SZFW_IRDSA_cox.npy',loss)
