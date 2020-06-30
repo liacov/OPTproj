@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH -J inexactZFW_cox
-#SBATCH -o ./inexactZFW_cox.res
-#SBATCH -e ./inexactZFW_cox.err
+#SBATCH -J inexactZFW_lasso
+#SBATCH -o ./inexactZFW_lasso.res
+#SBATCH -e ./inexactZFW_lasso.err
 
 #SBATCH --mail-user laura.iacovissi@gmail.com
 #SBATCH --mail-type=ALL

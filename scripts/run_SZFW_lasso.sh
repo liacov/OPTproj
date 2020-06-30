@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH -J sZFW_IRDSA_cox
-#SBATCH -o ./sZFW_IRDSA_cox.res
-#SBATCH -e ./sZFW_IRDSA_cox.err
+#SBATCH -J sZFW_IRDSA_lasso
+#SBATCH -o ./sZFW_IRDSA_lasso.res
+#SBATCH -e ./sZFW_IRDSA_lasso.err
 
 #SBATCH --mail-user laura.iacovissi@gmail.com
 #SBATCH --mail-type=ALL

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH -J dZFW_cox
-#SBATCH -o ./dZFW_cox.res
-#SBATCH -e ./dZFW_cox.err
+#SBATCH -J dZFW_lasso
+#SBATCH -o ./dZFW_lasso.res
+#SBATCH -e ./dZFW_lasso.err
 
 #SBATCH --mail-user laura.iacovissi@gmail.com
 #SBATCH --mail-type=ALL
