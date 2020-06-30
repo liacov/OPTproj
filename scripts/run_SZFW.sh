@@ -7,7 +7,7 @@
 #SBATCH --mail-user laura.iacovissi@gmail.com
 #SBATCH --mail-type=ALL
 
-#SBATCH -c 15
+#SBATCH -c 10
 #SBATCH --mem=10G
 #SBATCH -p medium
 

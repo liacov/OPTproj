@@ -5,7 +5,9 @@ Authors: Laura Iacovissi, Federico Matteo
 
 import numpy as np
 import pandas as pd
-from numba import njit
+from sklearn import datasets
+from scipy.sparse.linalg import norm
+
 
 def e(i, d):
     ei = np.zeros(d)
@@ -97,54 +99,39 @@ def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
         if loss_eval < eps: break # check stopping condition
     return F(w_pred), F(w), w, partial/T, t, loss, F_values
 
-@njit
-def F(w):
-    output = 0
-    for i in range(X.shape[0]):
-        if y[i] == 1:
-            sum_jR = np.sum(np.exp((X @ w)[i:]))
-            output += y[i]*(-X[i,:] @ w + np.log(sum_jR))
-    return 1/X.shape[0] * output
 
 if __name__ == "__main__":
     # define global variables for data
-    global X, y, time, n, d
+    global X, y, d
 
     # set random seed
-    np.random.seed(7)
+    np.random.seed(1007)
 
-    # load clinical data to extract time of risk
-    clinical = pd.read_table('../Data/SurvivalTimes.txt', index_col=0, sep=';')
-    clinical = clinical.set_index(clinical["IDs"], drop=True).iloc[:,:-1]
-    clinical["death_event"].value_counts()
-    # load rna data
-    data = pd.read_table("../Data/mydata.txt", sep = ";")
-    data = data.T
-    # crate datafram with data of interest
-    df = data.merge(clinical, left_index= True, right_index = True)
-    df = df.sort_values(by = "new_death")
-    del data, clinical
-    # define feature matrix X, label vector y and vector of times
-    X, y, time = df.iloc[:,:-2], df.iloc[:,-1].values, df.iloc[:,-2].values
-    X = np.array(X.apply(lambda x: (x - np.mean(x))/np.std(x), axis = 0))
-    del df
+    # load data
+    X, y = datasets.load_svmlight_file("../Data/covtype.libsvm.binary.scale.bz2")
 
-    n, d = X.shape
+    # space dimension
+    d = X.shape[1]
+
+    # Lipschitz constant computation
+    L = 2/X.shape[0] * norm(X.T @ X)
+
+    # define the objective function
+    F = lambda w: 0.5 * np.sum(np.power(y - X @ w, 2))
 
     # initialize prarameters for the algorithm:
     # stating point
+    np.random.seed(1007)
     w0 = np.random.rand(d)
-    w0 = w0/np.sum(w0) * np.random.rand(1) *10
-    # Lipschitz constant
-    L = 50
+    w0 = w0/np.sum(w0) * np.random.rand(1)
 
     # call stochastic ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B = 1, r = 10, T = 100, eps = 1e-8)
+    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B=1, r=1, T=1000, eps=1e-8)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
     # print F(stanting point) VS F(w*)
     print(F(w0), F(w))
 
-    np.save('../Data/results/function_IZFW_cox.npy',f_values)
-    np.save('../Data/results/loss_IZFW_cox.npy',loss)
+    np.save('../Data/results/function_IZFW_lasso.npy',f_values)
+    np.save('../Data/results/loss_IZFW_lasso.npy',loss)

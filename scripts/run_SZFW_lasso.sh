@@ -1,15 +1,15 @@
 #!/bin/bash
 
-#SBATCH -J inexactZFW_cox
-#SBATCH -o ./inexactZFW_cox.res
-#SBATCH -e ./inexactZFW_cox.err
+#SBATCH -J sZFW_IRDSA_cox
+#SBATCH -o ./sZFW_IRDSA_cox.res
+#SBATCH -e ./sZFW_IRDSA_cox.err
 
 #SBATCH --mail-user laura.iacovissi@gmail.com
 #SBATCH --mail-type=ALL
 
-#SBATCH -c 10
+#SBATCH -c 4
 #SBATCH --mem=10G
 #SBATCH -p medium
 
 # Run the python script
-python3 IZFW_cox.py
+python3 SZFW_lasso.py
