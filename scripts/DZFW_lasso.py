@@ -6,7 +6,6 @@ Authors: Laura Iacovissi, Federico Matteo
 import numpy as np
 import pandas as pd
 from sklearn import datasets
-from scipy.sparse.linalg import norm
 
 def e(i, d):
     ei = np.zeros(d)
@@ -83,10 +82,10 @@ if __name__ == "__main__":
     d = X.shape[1]
 
     # Lipschitz constant computation
-    L = 2/X.shape[0] * norm(X.T @ X)
+    L = 3
 
     # define the objective function
-    F = lambda w: 0.5 * np.sum(np.power(y - X @ w, 2))
+    F = 3
 
     # initialize prarameters for the algorithm:
     # stating point
@@ -94,7 +93,7 @@ if __name__ == "__main__":
     w0 = np.random.rand(d)
     w0 = w0/np.sum(w0) * np.random.rand(1)
 
-    # call deterministic ZFW 
+    # call deterministic ZFW
     fpred, f, w, mean, t, loss, f_values = detZFW(F, L, d, w0, r=1, T=1000, eps=1e-8)
     print('\n\n')
     # print resume

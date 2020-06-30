@@ -6,7 +6,6 @@ Authors: Laura Iacovissi, Federico Matteo
 import numpy as np
 import pandas as pd
 from sklearn import datasets
-from scipy.sparse.linalg import norm
 
 
 def e(i, d):
@@ -60,7 +59,7 @@ def InexactUpdate(g, d, v, r, gamma, mu):
     return haty
 
 
-def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
+def IZFW(F, d, w0, L, B = 1, D = 2, T = 100, eps = 1e-6):
     """
     INPUT
     - F: loss function
@@ -76,7 +75,7 @@ def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
     alpha = lambda t: 2/(t+2)
     gamma = lambda t: 4*L/t
     mu = lambda t: L*2*r/(t*T)
-    m = lambda t: 10000 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
+    m = lambda t: t * (t+1) / D * (d+3) #np.max([(d+5)*B*T, d+3])
     c = 1 / (np.sqrt(2*T)) * np.max([1/(d+3), np.sqrt(2*r/(d*(T+1)))]) # smoothing parameter now fixed
 
     loss = []
@@ -114,7 +113,9 @@ if __name__ == "__main__":
     d = X.shape[1]
 
     # Lipschitz constant computation
-    L = 2/X.shape[0] * norm(X.T @ X)
+    L = 3
+    D = 2*r*10 # we will start from m = 6, up to T * (T+1) / D * (d+3) = 28785 (for T=100)
+    B = 1
 
     # define the objective function
     F = lambda w: 0.5 * np.sum(np.power(y - X @ w, 2))
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     w0 = w0/np.sum(w0) * np.random.rand(1)
 
     # call stochastic ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B=1, r=1, T=1000, eps=1e-8)
+    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B, D, T=100, eps=1e-6)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
