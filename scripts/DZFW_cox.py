@@ -65,7 +65,7 @@ def detZFW(F, L, d, w0, r=1, T=100, eps=1e-5):
         loss.append(loss_eval)
         print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
         if loss_eval < eps: break # check stopping condition
-    return F(w_pred), F(w), w, partial/T, t, F_values
+    return F(w_pred), F(w), w, partial/T, t, loss, F_values
 
 
 @njit

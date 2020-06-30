@@ -59,7 +59,7 @@ def InexactUpdate(g, d, v, r, gamma, mu):
     return haty
 
 
-def IZFW(F, d, w0, L, B = 1, D = 2, T = 100, eps = 1e-6):
+def IZFW(F, d, w0, L, B = 1, D = 2, r=1, T = 100, eps = 1e-6):
     """
     INPUT
     - F: loss function
@@ -67,6 +67,8 @@ def IZFW(F, d, w0, L, B = 1, D = 2, T = 100, eps = 1e-6):
     - w0: starting point
     - L: lipschitz
     - B: 1
+    - D: radius estimate from above
+    - r: l1 ball radius
     - r: radius of the ball
     - T: max iteration
     - eps: tolerance
@@ -114,7 +116,7 @@ if __name__ == "__main__":
 
     # Lipschitz constant computation
     L = 3
-    D = 2*r*10 # we will start from m = 6, up to T * (T+1) / D * (d+3) = 28785 (for T=100)
+    D = 20 # we will start from m = 6, up to T * (T+1) / D * (d+3) = 28785 (for T=100)
     B = 1
 
     # define the objective function
