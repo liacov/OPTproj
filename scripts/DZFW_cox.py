@@ -108,7 +108,7 @@ if __name__ == "__main__":
     w0 = np.random.rand(d)
     w0 = w0/np.sum(w0) * np.random.rand(1) *10
     # Lipschitz constant
-    L = np.linalg.norm(X.T @ X)
+    L = 50
 
     # call ZFW with InexactUpdate
     fpred, f, w, mean, t, loss, f_values = detZFW(F, L, X.shape[1], w0, r=10, T=100, eps=1e-8)

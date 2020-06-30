@@ -75,7 +75,7 @@ def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
     alpha = lambda t: 2/(t+2)
     gamma = lambda t: 4*L/t
     mu = lambda t: L*2*r/(t*T)
-    m = lambda t: 1000 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
+    m = lambda t: 10000 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
     c = 1 / (np.sqrt(2*T)) * np.max([1/(d+3), np.sqrt(2*r/(d*(T+1)))]) # smoothing parameter now fixed
 
     loss = []
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     w0 = np.random.rand(d)
     w0 = w0/np.sum(w0) * np.random.rand(1) *10
     # Lipschitz constant
-    L = np.linalg.norm(X.T @ X)
+    L = 50
 
     # call ZFW with InexactUpdate
     fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B = 1, r = 10, T = 100, eps = 1e-8)
