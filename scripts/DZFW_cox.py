@@ -47,6 +47,8 @@ def detZFW(F, L, d, w0, r=1, T=100, eps=1e-5):
     c = lambda t: L*gamma(t)/d
     w = w0
     partial = 0
+    loss = []
+    F_values = [F(w0)]
     for t in range(1, T+1):
         # comupute the gradient approx
         gt = KWSA(F, w, None, c(t), d)

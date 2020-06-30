@@ -75,10 +75,11 @@ def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
     alpha = lambda t: 2/(t+2)
     gamma = lambda t: 4*L/t
     mu = lambda t: L*2*r/(t*T)
-    m = lambda t: 100 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
+    m = lambda t: 1000 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
     c = 1 / (np.sqrt(2*T)) * np.max([1/(d+3), np.sqrt(2*r/(d*(T+1)))]) # smoothing parameter now fixed
 
     loss = []
+    F_values = [F(w0)]
     v, w = w0, w0
     partial = 0
 
