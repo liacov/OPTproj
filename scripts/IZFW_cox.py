@@ -58,7 +58,7 @@ def InexactUpdate(g, d, v, r, gamma, mu):
     return haty
 
 
-def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
+def IZFW(F, d, w0, L, B = 1, D = 2, T = 100, eps = 1e-6):
     """
     INPUT
     - F: loss function
@@ -73,9 +73,9 @@ def IZFW(F, d, w0, L, B = 1, r = 1, T = 100, eps = 1e-6):
 
     alpha = lambda t: 2/(t+2)
     gamma = lambda t: 4*L/t
-    mu = lambda t: L*2*r/(t*T)
-    m = lambda t: 10000 #t * (t+1) / 2*r * np.max([(d+5)*B*T, d+3])
-    c = 1 / (np.sqrt(2*T)) * np.max([1/(d+3), np.sqrt(2*r/(d*(T+1)))]) # smoothing parameter now fixed
+    mu = lambda t: L*D/(t*T)
+    m = lambda t: t * (t+1) / D * (d+3) #np.max([(d+5)*B*T, d+3])
+    c = 1 / (np.sqrt(2*T)) * np.max([1/(d+3), np.sqrt(D/(d*(T+1)))]) # smoothing parameter now fixed
 
     loss = []
     F_values = [F(w0)]
@@ -106,40 +106,36 @@ def F(w):
             output += y[i]*(-X[i,:] @ w + np.log(sum_jR))
     return 1/X.shape[0] * output
 
+
 if __name__ == "__main__":
     # define global variables for data
-    global X, y, time, n, d
+    global X, y, d
 
     # set random seed
-    np.random.seed(7)
+    np.random.seed(1007)
 
-    # load clinical data to extract time of risk
-    clinical = pd.read_table('../Data/SurvivalTimes.txt', index_col=0, sep=';')
-    clinical = clinical.set_index(clinical["IDs"], drop=True).iloc[:,:-1]
-    clinical["death_event"].value_counts()
-    # load rna data
-    data = pd.read_table("../Data/mydata.txt", sep = ";")
-    data = data.T
-    # crate datafram with data of interest
-    df = data.merge(clinical, left_index= True, right_index = True)
-    df = df.sort_values(by = "new_death")
-    del data, clinical
-    # define feature matrix X, label vector y and vector of times
-    X, y, time = df.iloc[:,:-2], df.iloc[:,-1].values, df.iloc[:,-2].values
-    X = np.array(X.apply(lambda x: (x - np.mean(x))/np.std(x), axis = 0))
-    del df
+    # load data
+    X, y = datasets.load_svmlight_file("../Data/covtype.libsvm.binary.scale.bz2")
 
-    n, d = X.shape
+    # space dimension
+    d = X.shape[1]
+
+    # Lipschitz constant computation
+    L = 3
+    D = 10000 # we will start from m = 6, up to T * (T+1) / D * (d+3) = 28785 (for T=100)
+    B = 1
+
+    # define the objective function
+    F = lambda w: 0.5 * np.sum(np.power(y - X @ w, 2))
 
     # initialize prarameters for the algorithm:
     # stating point
+    np.random.seed(1007)
     w0 = np.random.rand(d)
-    w0 = w0/np.sum(w0) * np.random.rand(1) *10
-    # Lipschitz constant
-    L = 50
+    w0 = w0/np.sum(w0) * np.random.rand(1)
 
     # call stochastic ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B = 1, r = 10, T = 100, eps = 1e-8)
+    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B, D, T=100, eps=1e-6)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
