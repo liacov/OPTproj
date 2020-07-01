@@ -85,7 +85,7 @@ if __name__ == "__main__":
     L = 3
 
     # define the objective function
-    F = 3
+    F = lambda w: 0.5/n * np.sum(np.power(y - X @ w, 2))
 
     # initialize prarameters for the algorithm:
     # stating point

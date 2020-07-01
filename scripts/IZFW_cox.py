@@ -139,7 +139,7 @@ if __name__ == "__main__":
     w0 = np.random.rand(d)
     w0 = w0/np.sum(w0) * np.random.rand(1) * 10
     # Lipschitz constant computation
-    L = 50
+    L = 0.1
     D = 10000 # we will start from m = 6, up to T * (T+1) / D * (d+3) = 28785 (for T=100)
     B = 1
 

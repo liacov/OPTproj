@@ -134,7 +134,7 @@ if __name__ == "__main__":
     d = X.shape[1]
 
     # define the objective function
-    F = lambda w: 0.5 * np.sum(np.power(y - X @ w, 2))
+    F = lambda w: 0.5/n * np.sum(np.power(y - X @ w, 2))
 
     # initialize prarameters for the algorithm:
     # stating point
