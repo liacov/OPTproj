@@ -96,7 +96,7 @@ def IZFW(F, d, w0, L, B = 1, D = 2, r=1, T = 100, eps = 1e-6):
         F_values.append(F_w)
         loss_eval = np.abs(F_values[-2] - F_w)
         loss.append(loss_eval)
-        print(f"Loss evaluation at time {t}:\t{loss_eval:.4f}\n")
+        print(f"Loss evaluation at time {t}:\t{loss_eval:.7f}\n")
         if loss_eval < eps: break # check stopping condition
     return F(w_pred), F(w), w, partial/T, t, loss, F_values
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     B = 1
 
     # define the objective function
-    F = lambda w: 0.5 * np.sum(np.power(y - X @ w, 2))
+    F = lambda w: 0.5/n * np.sum(np.power(y - X @ w, 2))
 
     # initialize prarameters for the algorithm:
     # stating point
