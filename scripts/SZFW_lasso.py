@@ -71,7 +71,12 @@ def stochasticZFW(F, d,  w0, method = "IRDSA", r=1, T=100, eps=1e-5):
                                 "p": lambda t: 4 / (np.power(d, 1/3) * np.power(t+8, 2/3)),
                                 "oracle": IRDSA},
 
-                       "IRDSA": {"m": 100,
+                       "IRDSA1": {"m": 6,
+                                "c": lambda t: 2 * np.sqrt(6) / (np.power(d, 3/2) * np.power(t+8, 1/3)),
+                                "p": lambda t: 4 / (np.power(1+d/6, 1/3) * np.power(t+8, 2/3)),
+                                "oracle": IRDSA},
+
+                       "IRDSA2": {"m": 100,
                                 "c": lambda t: 2 * np.sqrt(6) / (np.power(d, 3/2) * np.power(t+8, 1/3)),
                                 "p": lambda t: 4 / (np.power(1+d/6, 1/3) * np.power(t+8, 2/3)),
                                 "oracle": IRDSA}
