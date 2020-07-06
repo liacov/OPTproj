@@ -148,7 +148,7 @@ if __name__ == "__main__":
     w0 = w0/np.sum(w0) * np.random.rand(1)
 
     # call stochastic ZFW
-    fpred, f, w, mean, t, loss, f_values = stochasticZFW(F, d, w0, method = "IRDSA", r=1, T=1000, eps=1e-8)
+    fpred, f, w, mean, t, loss, f_values = stochasticZFW(F, d, w0, method = "IRDSA1", r=1, T=1000, eps=1e-8)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')

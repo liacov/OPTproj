@@ -137,5 +137,6 @@ if __name__ == "__main__":
     # print F(stanting point) VS F(w*)
     print(F(w0), F(w))
 
-    np.save('../Data/results/function_IZFW_lasso.npy',f_values)
-    np.save('../Data/results/loss_IZFW_lasso.npy',loss)
+    np.save('../Data/results/function_IZFW_lasso_long.npy',f_values)
+    np.save('../Data/results/loss_IZFW_lasso_long.npy',loss)    
+    np.save('../Data/results/inner_IZFW_lasso_long.npy',inner)

@@ -1,15 +1,15 @@
 #!/bin/bash
 
-#SBATCH -J inexactZFW_lasso
-#SBATCH -o ./inexactZFW_lasso.res
-#SBATCH -e ./inexactZFW_lasso.err
+#SBATCH -J inexactZFW_lasso_long
+#SBATCH -o ./inexactZFW_lasso_long.res
+#SBATCH -e ./inexactZFW_lasso_long.err
 
 #SBATCH --mail-user laura.iacovissi@gmail.com
 #SBATCH --mail-type=ALL
 
-#SBATCH -c 4
+#SBATCH -c 10
 #SBATCH --mem=10G
-#SBATCH -p medium
+#SBATCH -p long
 
 # Run the python script
-python3 IZFW_lasso.py
+python3 IZFW_lasso_long.py
