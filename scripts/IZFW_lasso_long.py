@@ -113,7 +113,8 @@ if __name__ == "__main__":
     X, y = datasets.load_svmlight_file("../Data/covtype.libsvm.binary.scale.bz2")
 
     # space dimension
-    d = X.shape[1]
+    d = X.shape[1]    
+    n = y.shape[0]
 
     # Lipschitz constant computation
     L = 3
@@ -138,5 +139,5 @@ if __name__ == "__main__":
     print(F(w0), F(w))
 
     np.save('../Data/results/function_IZFW_lasso_long.npy',f_values)
-    np.save('../Data/results/loss_IZFW_lasso_long.npy',loss)    
+    np.save('../Data/results/loss_IZFW_lasso_long.npy',loss)
     np.save('../Data/results/inner_IZFW_lasso_long.npy',inner)

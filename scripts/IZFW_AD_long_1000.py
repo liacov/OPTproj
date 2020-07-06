@@ -145,13 +145,13 @@ if __name__ == "__main__":
     w0 = w0/np.sum(w0) * np.random.rand(1)
 
     # call stochastic ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss, f_values, inner = IZFW(F, d, w0, L, B, D, T=100, eps=1e-8)
+    fpred, f, w, mean, t, loss, f_values, inner = IZFW(F, d, w0, L, B, D, T=1000, eps=1e-8)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
     # print F(stanting point) VS F(w*)
     print(F(w0), F(w))
 
-    np.save('../Data/results/function_IZFW_AD_long.npy',f_values)
-    np.save('../Data/results/loss_IZFW_AD_long.npy',loss)
-    np.save('../Data/results/inner_IZFW_AD_long.npy',inner)
+    np.save('../Data/results/function_IZFW_AD_long_1000.npy',f_values)
+    np.save('../Data/results/loss_IZFW_AD_long_1000.npy',loss)
+    np.save('../Data/results/inner_IZFW_AD_long_1000.npy',inner)

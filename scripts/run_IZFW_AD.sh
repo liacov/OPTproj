@@ -9,7 +9,7 @@
 
 #SBATCH -c 8
 #SBATCH --mem=10G
-#SBATCH -p long
+#SBATCH -p short
 
 # Run the python script
 python3 IZFW_AD_long.py
