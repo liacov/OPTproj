@@ -56,7 +56,7 @@ def InexactUpdate(g, d, v, r, gamma, mu):
         else:
             haty = (t-1)/(t+1) * haty + 2/(t+1)*yt
             t +=1
-    return haty
+    return haty, t
 
 
 def IZFW(F, d, w0, L, B = 1, D = 2, r=1, T = 100, eps = 1e-6):
@@ -84,11 +84,12 @@ def IZFW(F, d, w0, L, B = 1, D = 2, r=1, T = 100, eps = 1e-6):
     F_values = [F(w0)]
     v, w = w0, w0
     partial = 0
-
+    inner = [0]
     for t in range(1, T+1):
         dt = (1-alpha(t)) * w + alpha(t) * v
         g = IRDSA(F, dt, int(np.ceil(m(t))), c, d)
-        v = InexactUpdate(g, d, v, r, gamma(t), mu(t)) #ICG
+        v, inner_t = InexactUpdate(g, d, v, r, gamma(t), mu(t)) #ICG
+        inner.append(inner_t)
         w_pred = w
         w = (1 - alpha(t)) * w + alpha(t) * v
         partial += w
@@ -98,7 +99,7 @@ def IZFW(F, d, w0, L, B = 1, D = 2, r=1, T = 100, eps = 1e-6):
         loss.append(loss_eval)
         print(f"Loss evaluation at time {t}:\t{loss_eval:.7f}\n")
         if loss_eval < eps: break # check stopping condition
-    return F(w_pred), F(w), w, partial/T, t, loss, F_values
+    return F(w_pred), F(w), w, partial/T, t, loss, F_values, inner
 
 
 if __name__ == "__main__":
@@ -129,7 +130,7 @@ if __name__ == "__main__":
     w0 = w0/np.sum(w0) * np.random.rand(1)
 
     # call stochastic ZFW with InexactUpdate
-    fpred, f, w, mean, t, loss, f_values = IZFW(F, d, w0, L, B, D, T=100, eps=1e-6)
+    fpred, f, w, mean, t, loss, f_values, inner = IZFW(F, d, w0, L, B, D, T=100, eps=1e-6)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
