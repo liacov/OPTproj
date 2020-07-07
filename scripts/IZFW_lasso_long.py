@@ -117,8 +117,9 @@ if __name__ == "__main__":
     n = y.shape[0]
 
     # Lipschitz constant computation
-    L = 3
-    D = 20 # we will start from m = 6, up to T * (T+1) / D * (d+3) = 28785 (for T=100)
+    # setting parameters
+    L = 0.01
+    D = 10000 # m < d
     B = 1
 
     # define the objective function
@@ -127,8 +128,9 @@ if __name__ == "__main__":
     # initialize prarameters for the algorithm:
     # stating point
     np.random.seed(1007)
-    w0 = np.random.rand(d)
-    w0 = w0/np.sum(w0) * np.random.rand(1)
+    #w0 = np.random.rand(d)
+    #w0 = w0/np.sum(w0) * np.random.rand(1)
+    w0 = np.zeros(d) # center
 
     # call stochastic ZFW with InexactUpdate
     fpred, f, w, mean, t, loss, f_values, inner = IZFW(F, d, w0, L, B, D, T=100, eps=1e-6)
@@ -138,6 +140,6 @@ if __name__ == "__main__":
     # print F(stanting point) VS F(w*)
     print(F(w0), F(w))
 
-    np.save('../Data/results/function_IZFW_lasso_long.npy',f_values)
-    np.save('../Data/results/loss_IZFW_lasso_long.npy',loss)
-    np.save('../Data/results/inner_IZFW_lasso_long.npy',inner)
+    np.save('../Data/results/function_IZFW_lasso_mind.npy',f_values)
+    np.save('../Data/results/loss_IZFW_lasso_mind.npy',loss)
+    np.save('../Data/results/inner_IZFW_lasso_mind.npy',inner)
