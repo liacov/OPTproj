@@ -23,7 +23,7 @@ def IRDSA(F, w, m, c, d):
     - F: objective function
     - w: current weight
     - m: sample dimension
-    - d: features dimension../Data/results/function_IZFW_lasso_AD.npy
+    - d: features dimension
     - c: costant
 
     """
