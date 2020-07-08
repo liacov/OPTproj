@@ -71,12 +71,7 @@ def stochasticZFW(F, d,  w0, method = "IRDSA", r=1, T=100, eps=1e-5):
                                 "p": lambda t: 4 / (np.power(d, 1/3) * np.power(t+8, 2/3)),
                                 "oracle": IRDSA},
 
-                       "IRDSA1": {"m": 6,
-                                "c": lambda t: 2 * np.sqrt(6) / (np.power(d, 3/2) * np.power(t+8, 1/3)),
-                                "p": lambda t: 4 / (np.power(1+d/6, 1/3) * np.power(t+8, 2/3)),
-                                "oracle": IRDSA},
-
-                       "IRDSA2": {"m": 100,
+                       "IRDSA": {"m": 6,
                                 "c": lambda t: 2 * np.sqrt(6) / (np.power(d, 3/2) * np.power(t+8, 1/3)),
                                 "p": lambda t: 4 / (np.power(1+d/6, 1/3) * np.power(t+8, 2/3)),
                                 "oracle": IRDSA}
@@ -148,7 +143,7 @@ if __name__ == "__main__":
     w0 = w0/np.sum(w0) * np.random.rand(1)
 
     # call stochastic ZFW
-    fpred, f, w, mean, t, loss, f_values = stochasticZFW(F, d, w0, method = "IRDSA1", r=1, T=1000, eps=1e-8)
+    fpred, f, w, mean, t, loss, f_values = stochasticZFW(F, d, w0, method = "IRDSA", r=1, T=1000, eps=1e-8)
     print('\n\n')
     # print resume
     print(f'OUTPUT:\n\nF(w_pred) = {fpred}\n\nF(w) = {f}\n\nw = {w}\n\naverage w = {mean}\n\nT = {t}')
